@@ -1,7 +1,5 @@
 # Generalized OT Geodesics
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gpeyre/generalized-ot-geodesics/blob/main/example/generalized_ot_2d_demo.ipynb)
-
 PyTorch implementation of Lagrangian geodesic approximation for generalized Wasserstein-type energies.
 
 ## Repository Layout
@@ -36,6 +34,27 @@ solver = GeneralizedOTGeodesicSolver(
 result = solver.optimize(x0, x1, t_steps=t_steps, n_steps=20, snapshot_every=5)
 print(result.losses[-1])
 ```
+
+## Energy Minimized
+
+The solver optimizes a discrete path of point clouds
+\[
+X_0, X_1, \dots, X_{T-1}, \quad X_t \in \mathbb{R}^{d \times n},
+\]
+with fixed initial condition \(X_0 = x_0\), by minimizing
+\[
+\mathcal{E}(X_{1:T-1}) =
+W_2^2(X_{T-1}, x_1) +
+\frac{\gamma}{n(T-1)}
+\sum_{t=1}^{T-1}\sum_{i=1}^n
+\phi(X_t, X_t(:,i))\,\|X_t(:,i)-X_{t-1}(:,i)\|_2^2,
+\]
+where \(\phi\) is the chosen metric modulation (`constant` or `transformer`), and \(W_2^2\) is the terminal quadratic OT loss (computed with POT).
+
+## Example
+
+Notebook demo:
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gpeyre/generalized-ot-geodesics/blob/main/example/generalized_ot_2d_demo.ipynb)
 
 ## Notes
 
