@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Literal, Optional
+from typing import Dict, List, Literal, Optional, Sequence
 
 import numpy as np
 import torch
@@ -204,3 +204,43 @@ class GeneralizedOTGeodesicSolver:
             snapshots=snapshots,
             endpoint_plans=endpoint_plans,
         )
+
+
+def optimize_with_gamma_schedule(
+    x0: torch.Tensor,
+    x1: torch.Tensor,
+    gammas: Sequence[float],
+    t_steps: int = 8,
+    max_iter: int = 40,
+    tolerance: float = 0.0,
+    snapshot_every: int = 40,
+    initial_path: Optional[torch.Tensor] = None,
+    **solver_kwargs: object,
+) -> List[OptimizationResult]:
+    """Run warm-started optimization over a sequence of gamma values.
+
+    For each gamma in `gammas`, a new solver is instantiated with the same
+    keyword arguments and the path from the previous stage is used as
+    initialization.
+    """
+    if len(gammas) == 0:
+        raise ValueError("gammas must contain at least one value.")
+
+    scheduled_results: List[OptimizationResult] = []
+    current_init = initial_path
+
+    for gamma in gammas:
+        solver = GeneralizedOTGeodesicSolver(gamma=float(gamma), **solver_kwargs)
+        result = solver.optimize(
+            x0=x0,
+            x1=x1,
+            t_steps=t_steps,
+            initial_path=current_init,
+            max_iter=max_iter,
+            tolerance=tolerance,
+            snapshot_every=snapshot_every,
+        )
+        scheduled_results.append(result)
+        current_init = result.path
+
+    return scheduled_results

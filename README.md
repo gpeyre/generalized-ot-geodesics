@@ -5,7 +5,7 @@ PyTorch implementation of Lagrangian geodesic approximation for generalized Wass
 ## Repository Layout
 
 - `ot_geodesics/`: main Python library.
-- `example/`: Jupyter notebook demonstrating optimization in 2D.
+- `example/`: Jupyter notebooks demonstrating optimization and parameter studies in 2D.
 - `paper/`: short mathematical summary in LaTeX.
 
 ## Installation
@@ -35,6 +35,29 @@ result = solver.optimize(x0, x1, t_steps=t_steps, n_steps=20, snapshot_every=5)
 print(result.losses[-1])
 ```
 
+## Gamma Scheduling API
+
+The toolbox provides warm-started continuation over a decaying sequence of kinetic weights:
+
+```python
+import numpy as np
+from ot_geodesics.solver import optimize_with_gamma_schedule
+
+gammas = np.geomspace(1.0, 1e-4, 5)
+results = optimize_with_gamma_schedule(
+    x0=x0,
+    x1=x1,
+    gammas=gammas,
+    t_steps=12,
+    max_iter=35,
+    initial_path=x0.unsqueeze(2).repeat(1, 1, 12),
+    phi_mode="transformer",
+    beta=1.0,
+    optimizer_mode="lbfgs",
+)
+final_path = results[-1].path
+```
+
 ## Energy Minimized
 
 The solver optimizes a discrete path of point clouds
@@ -53,14 +76,17 @@ where $\phi$ is the chosen metric modulation (`constant` or `transformer`), and 
 
 ## Example
 
-Notebook demo:
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gpeyre/generalized-ot-geodesics/blob/main/example/generalized_ot_2d_demo.ipynb)
+- Main demo notebook:
+  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gpeyre/generalized-ot-geodesics/blob/main/example/generalized_ot_2d_demo.ipynb)
+- Parameter studies notebook (impact of `beta` and Gaussian variance):
+  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/gpeyre/generalized-ot-geodesics/blob/main/example/generalized_ot_parameter_studies.ipynb)
 
 ## Notes
 
 - The objective uses only the terminal OT term $W_2^2(X_{T-1}, X_1)$ plus the kinetic regularization term.
 - The initial slice is imposed exactly ($X_0 = x0$): only slices $t=1,\dots,T-1$ are optimized.
 - The OT endpoint term is computed with POT and used in a differentiable surrogate objective by freezing the transport plan during each closure call.
+- A reusable continuation helper `optimize_with_gamma_schedule(...)` is available to run warm-started optimizations over decaying `gamma` values.
 - Two built-in `phi` models are provided:
   - `constant` (classical OT-like kinetic term)
   - `transformer` with $\phi(X_t,\cdot)=\sum_{i,j}\exp(-\|x_i-x_j\|^2)$

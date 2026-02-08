@@ -9,12 +9,18 @@ from .helper import (
     plot_interpolation_time_slice,
     sample_points_from_shape_image,
 )
-from .solver import GeneralizedOTGeodesicSolver, OptimizationResult, generalized_ot_energy
+from .solver import (
+    GeneralizedOTGeodesicSolver,
+    OptimizationResult,
+    generalized_ot_energy,
+    optimize_with_gamma_schedule,
+)
 
 __all__ = [
     "GeneralizedOTGeodesicSolver",
     "OptimizationResult",
     "generalized_ot_energy",
+    "optimize_with_gamma_schedule",
     "draw_trajectories",
     "draw_intermediate_pointclouds",
     "compute_global_bbox",

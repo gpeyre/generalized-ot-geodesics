@@ -60,11 +60,31 @@ Then we minimize $\mathcal{E}$ with L-BFGS in PyTorch.
 The constrained structure is enforced by parameterizing and optimizing only the tail slices
 $X_1,\dots,X_{T-1}$, while concatenating $X_0$ as a fixed first slice at every iteration.
 
+To improve robustness, the code also provides a continuation strategy over decaying
+kinetic weights $\gamma$:
+\[
+\gamma_1 > \gamma_2 > \cdots > \gamma_K,
+\]
+where each stage is warm-started from the previous optimized path.
+This is exposed in the API as \texttt{optimize\_with\_gamma\_schedule(...)}.
+
 For reference, an alternative unconstrained warm-start is linear interpolation:
 \[
 X_t^{(0)} = (1-\alpha_t)X_0 + \alpha_t X_1, \quad \alpha_t=\frac{t}{T-1}.
 \]
 At each closure call, POT provides an OT plan for endpoint terms, and PyTorch evaluates
 the plan-weighted cost to backpropagate through point locations.
+
+\section*{Current Numerical Studies}
+In addition to the main 2D demo, a dedicated parameter-study notebook evaluates:
+\begin{itemize}
+  \item \textbf{Impact of $\beta$:} $X_0$ is sampled from a single Gaussian and $X_1$
+  from a two-Gaussian mixture; interpolations are computed for four temperatures.
+  \item \textbf{Impact of variance:} $X_0$ and $X_1$ are single Gaussians with different means
+  and shared variance $\sigma^2$; interpolations are compared across several $\sigma$ values
+  at fixed $\beta=1$.
+\end{itemize}
+Both studies use $n=50$ particles and a 5-stage geometric schedule
+$\gamma \in [1,10^{-4}]$, and display final interpolating paths.
 
 \end{document}
