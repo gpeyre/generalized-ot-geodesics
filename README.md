@@ -38,18 +38,18 @@ print(result.losses[-1])
 ## Energy Minimized
 
 The solver optimizes a discrete path of point clouds
-\[
+$$
 X_0, X_1, \dots, X_{T-1}, \quad X_t \in \mathbb{R}^{d \times n},
-\]
-with fixed initial condition \(X_0 = x_0\), by minimizing
-\[
+$$
+with fixed initial condition $X_0 = x_0$, by minimizing
+$$
 \mathcal{E}(X_{1:T-1}) =
 W_2^2(X_{T-1}, x_1) +
 \frac{\gamma}{n(T-1)}
 \sum_{t=1}^{T-1}\sum_{i=1}^n
 \phi(X_t, X_t(:,i))\,\|X_t(:,i)-X_{t-1}(:,i)\|_2^2,
-\]
-where \(\phi\) is the chosen metric modulation (`constant` or `transformer`), and \(W_2^2\) is the terminal quadratic OT loss (computed with POT).
+$$
+where $\phi$ is the chosen metric modulation (`constant` or `transformer`), and $W_2^2$ is the terminal quadratic OT loss (computed with POT).
 
 ## Example
 
@@ -58,9 +58,9 @@ Notebook demo:
 
 ## Notes
 
-- The objective uses only the terminal OT term \(W_2^2(X_{T-1}, X_1)\) plus the kinetic regularization term.
-- The initial slice is imposed exactly (\(X_0 = x0\)): only slices \(t=1,\dots,T-1\) are optimized.
+- The objective uses only the terminal OT term $W_2^2(X_{T-1}, X_1)$ plus the kinetic regularization term.
+- The initial slice is imposed exactly ($X_0 = x0$): only slices $t=1,\dots,T-1$ are optimized.
 - The OT endpoint term is computed with POT and used in a differentiable surrogate objective by freezing the transport plan during each closure call.
 - Two built-in `phi` models are provided:
   - `constant` (classical OT-like kinetic term)
-  - `transformer` with \(\phi(X_t,\cdot)=\sum_{i,j}\exp(-\|x_i-x_j\|^2)\)
+  - `transformer` with $\phi(X_t,\cdot)=\sum_{i,j}\exp(-\|x_i-x_j\|^2)$
